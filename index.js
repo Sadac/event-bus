@@ -24,10 +24,16 @@ app.post('/events', async (req, res) => {
   // store all the events ocurred in the app
   events.push(event);
 
-  await axios.post('http://localhost:4000/events', event); // send event response to posts
-  await axios.post('http://localhost:4001/events', event); // send event response to comments
-  await axios.post('http://localhost:4002/events', event); // send event reponse to query
-  await axios.post('http://localhost:4003/events', event); // send event reponse to moderation
+  /**
+   * We need to replace localhost:400X with the name of the Service:
+   * @type kubectl get services
+   * In order to stasblish communication between the services inside
+   * the cluster since we're using kubernetes
+   */
+  await axios.post('http://posts-clusterip-srv:4000/events', event); // send event response to posts
+  await axios.post('http://comments-srv:4001/events', event); // send event response to comments
+  await axios.post('http://query-srv:4002/events', event); // send event reponse to query
+  await axios.post('http://moderation-srv:4003/events', event); // send event reponse to moderation
 
   res.send({ status: 'OK' });
 });
@@ -37,5 +43,7 @@ app.get('/events', async (req, res) => {
 });
 
 app.listen(4005, () => {
+  // 4005 is the port that we will be typing in kubernetes
+  // for the event-bus-depl.yaml in ports
   console.log('EVENT_BUS SERVICE: Listening on port 4005');
 });
